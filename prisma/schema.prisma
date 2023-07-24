@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Product {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  name       String
+  categoryId String // Foreign Key to Category
+  description String @default("")
+  category   Category @relation(fields: [categoryId], references: [id])
+  sizes     ProductSize[]
+  toppings ProductTopping[]
+  images    Image[]    
+  @@index([categoryId])
+
+}
+
+model Topping {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String  
+  price     Decimal @default(0)
+  imageUrl   String 
+  products ProductTopping[]
+}
+
+model ProductTopping{
+  productId String
+  product   Product @relation(fields: [productId],references: [id],onDelete: Cascade)
+  toppingId String
+  topping   Topping @relation(fields: [toppingId],references: [id],onDelete: Cascade)
+
+  @@id([productId,toppingId])
+  @@index([productId])
+  @@index([toppingId])
+}
+
+
+model ProductSize{
+  productId String
+  product   Product @relation(fields: [productId],references: [id],onDelete: Cascade)
+  sizeId String
+  size   Size @relation(fields: [sizeId],references: [id],onDelete: Cascade)
+  price  Decimal @default(0)
+  @@id([productId,sizeId])
+  @@index([productId])
+  @@index([sizeId])
+}
+
+
+model Category {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  name      String
+  products  Product[] 
+}
+
+
+
+
+model Size {
+  id        String    @id @default(uuid())
+  name      String
+  products  ProductSize[] // Relation to Product mode
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+
+}
+
+
+
+model Image {
+  id        String   @id @default(uuid())
+  url       String // URL of the image
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product  Product @relation(fields: [productId], references: [id],onDelete: Cascade)
+  productId String
+  @@index([productId])
+  
+ 
+}
